@@ -3,7 +3,9 @@
 #include <FirebaseArduino.h>
 
 //Information about this ESP8266
+#define IP_ESP "0000:DB0:0000::"
 #define ID "eyJuYW1lIjoiTU9EMDAwLUVTUDAwMCIsImlhdCI6MX0"
+#define PATH_ESP "0000:DB0:0000::/ESP_NAME"
 #define ESP_NAME "MOD000-ESP000"
 
 // Set these to run example.
@@ -13,35 +15,16 @@
 #define WIFI_PASSWORD "A123456789"
 
 //ESP8266 physical outputs
-#define D0 16 //D0 of ESP8266
-#define D1 5  //D1 of ESP8266
-#define D2 4  //D2 of ESP8266
-#define D3 0  //D3 of ESP8266
-#define D4 2  //D4 of ESP8266
-#define D5 14 //D5 of ESP8266
-#define D6 12 //D6 of ESP8266
-#define D7 13 //D7 of ESP8266
+#define BIT_0 16 //D0 of ESP8266
+#define BIT_1 5  //D1 of ESP8266
+#define BIT_2 4  //D2 of ESP8266
+#define BIT_3 0  //D3 of ESP8266
 
-boolean ValuesOfBits[8] = {true, false, true, false, true, false, true, false}; //Este arreglo debe ser guardado en memoria, Es el estado de los datos.
+#define BIT_VOLT_0 2  //D4 of ESP8266
+#define BIT_VOLT_1 14 //D5 of ESP8266
+#define BIT_VOLT_2 12 //D6 of ESP8266
+#define BIT_VOLT_3 13 //D7 of ESP8266
 
-
-void esp_presets(){ //Funcion que configura el nodo de el ESP.
-  Firebase.set("MOD000-ESP000/ID", ID); //Establece su ID
-  
-  for(int i = 0; i <= 7; i++){ // Loop que hace que se creen todos los bits y se agregen su valor guardado en la EPROM
-    Firebase.set(String(ESP_NAME) + "/B" + String(i), ValuesOfBits[i]);
-    }
-    
-    for(int i = 0; i < 7; i++){ //Imprime por consola el estado de los BITS
-      Serial.println(String(ValuesOfBits[i]));
-    }
-    
-   if (Firebase.failed()) {
-      Serial.print("pushing /logs failed:");
-      Serial.println(Firebase.error());  
-      return;
-   }
-}
 
 void setup() {
    Serial.begin(9600);
@@ -58,75 +41,167 @@ void setup() {
   Serial.println(WiFi.localIP());
   
   Firebase.begin(FIREBASE_HOST);
-
-  pinMode(D4, OUTPUT);
-
-
-  //Esta era una logica para hacer que no se repitieran los datos, pero la reemplace
-  //if(){
-    //Serial.println("ESP: " + String(ESP_NAME) + " already exist...");
-    //Serial.println(Firebase.getBool(ESP_NAME));
-    //} else {
-        esp_presets();
-        //Serial.println(Firebase.getBool(ESP_NAME));
-      //}
+  
+  pinMode(BIT_0, OUTPUT);
+  pinMode(BIT_1, OUTPUT);
+  pinMode(BIT_2, OUTPUT);
+  pinMode(BIT_3, OUTPUT);
+  pinMode(BIT_VOLT_0, OUTPUT);
+  pinMode(BIT_VOLT_1, OUTPUT);
+  pinMode(BIT_VOLT_2, OUTPUT);
+  pinMode(BIT_VOLT_3, OUTPUT);
+  
+  detectYourself();
 }
-int n = 0;
 
+void detectYourself(){
+  if(Firebase.getString(PATH_ESP) == ESP_NAME){
+      Serial.println("ESP Local Information");
+      Serial.println("IP: " + String(IP_ESP));
+      Serial.println("PATH IN DATABASE " + String(PATH_ESP));
+      Serial.println("ESP NAME: " + String(ESP_NAME));
+    }else{
+      Serial.print("The ESP are not vinculated with the database.");
+    }
+  }
+  
 void loop() {
-  //if(Firebase.getBool("led/")){
-     //digitalWrite(D4, LOW);
-    //} else {
-      //digitalWrite(D4, HIGH);
-      //}
-      
-  
-  // update value
-  //Firebase.setFloat("number", 43.0);
-  // handle error
-  //if (Firebase.failed()) {
-      //Serial.print("setting /number failed:");
-      //Serial.println(Firebase.error());  
-      //return;
-  //}
-  //delay(1000);
 
-  // get value 
-  //Serial.print("number: ");
-  //Serial.println(Firebase.getFloat("number"));
-  //delay(1000);
-
-  // remove value
-  //Firebase.remove("number");
-  //delay(1000);
-
-  // set string value
-  //Firebase.setString("message", "hello world");
-  // handle error
-  //if (Firebase.failed()) {
-      //Serial.print("setting /message failed:");
-      //Serial.println(Firebase.error());  
-      //return;
-  //}
-  //delay(1000);
+//--------------------------------------------------------------------B0--------------------------------------------------------------------
+  boolean state_b0 = Firebase.getBool("0000:DB0:0000::/B0/estado");
+   if (Firebase.failed()) {
+      Serial.print("Error verificando estado:");
+      Serial.println(Firebase.error());  
+      return;
+  }
+  delay(1500);
   
-  // set bool value
-  //Firebase.setBool("truth", false);
-  // handle error
-  //if (Firebase.failed()) {
-      //Serial.print("setting /truth failed:");
-      //Serial.println(Firebase.error());  
-      //return;
-  //}
-  //delay(1000);
-
+  if(state_b0 == true){
+    
+    String voltaje = Firebase.getString("0000:DB0:0000::/B0/voltaje");
+    if (Firebase.failed()) {
+      Serial.print("Error verificando voltaje:");
+      Serial.println(Firebase.error());  
+      return;
+    }
+    delay(1000);
+    
+    if(voltaje == "vl"){
+        digitalWrite(BIT_0,HIGH);
+        digitalWrite(BIT_VOLT_0,LOW);
+        Serial.println("B0 ON - 15V");
+      } else if (voltaje == "vh"){
+         digitalWrite(BIT_0,HIGH);
+         digitalWrite(BIT_VOLT_0,HIGH);
+         Serial.println("B0 ON - 30V");
+        }
+   } else if (!state_b0){
+         digitalWrite(BIT_0,LOW);
+         digitalWrite(BIT_VOLT_0,LOW);
+         Serial.println("B0 OFF 0V");    
+     }
+   delay(1000);
+   
+//--------------------------------------------------------------------B1--------------------------------------------------------------------
+   boolean state_b1 = Firebase.getBool("0000:DB0:0000::/B1/estado");
+   if (Firebase.failed()) {
+      Serial.print("Error verificando estado:");
+      Serial.println(Firebase.error());  
+      return;
+  }
+  delay(1500);
   
-  //Serial.print("pushed: /logs/");
-  //Serial.println(name);
+  if(state_b1 == true){
+    
+    String voltaje = Firebase.getString("0000:DB0:0000::/B1/voltaje");
+    if (Firebase.failed()) {
+      Serial.print("Error verificando voltaje");
+      Serial.println(Firebase.error());  
+      return;
+    }
+    delay(1000);
+    
+    if(voltaje == "vl"){
+        digitalWrite(BIT_1,HIGH);
+        digitalWrite(BIT_VOLT_1,LOW);
+        Serial.println("B1 ON - 15V");
+      } else if (voltaje == "vh"){
+         digitalWrite(BIT_1,HIGH);
+         digitalWrite(BIT_VOLT_1,HIGH);
+         Serial.println("B1 ON - 30V");
+        }
+   } else if (!state_b0){
+         digitalWrite(BIT_0,LOW);
+         digitalWrite(BIT_VOLT_0,LOW);
+         Serial.println("B1 OFF 0V");    
+     }
+   delay(1000);
+//--------------------------------------------------------------------B2--------------------------------------------------------------------
+   boolean state_b2 = Firebase.getBool("0000:DB0:0000::/B2/estado");
+   if (Firebase.failed()) {
+      Serial.print("Error verificando estado:");
+      Serial.println(Firebase.error());  
+      return;
+  }
+  delay(1500);
   
-  //delay(1000);
-  //digitalWrite(D4,LOW);
-  //delay(1000);
-  //digitalWrite(D4,HIGH);
-  //delay(1000);
+  if(state_b2 == true){
+    
+    String voltaje = Firebase.getString("0000:DB0:0000::/B2/voltaje");
+    if (Firebase.failed()) {
+      Serial.print("Error verificando voltaje");
+      Serial.println(Firebase.error());  
+      return;
+    }
+    delay(1000);
+    
+    if(voltaje == "vl"){
+        digitalWrite(BIT_2,HIGH);
+        digitalWrite(BIT_VOLT_2,LOW);
+        Serial.println("B2 ON - 15V");
+      } else if (voltaje == "vh"){
+         digitalWrite(BIT_2,HIGH);
+         digitalWrite(BIT_VOLT_2,HIGH);
+         Serial.println("B2 ON - 30V");
+        }
+   } else if (!state_b2){
+         digitalWrite(BIT_2,LOW);
+         digitalWrite(BIT_VOLT_2,LOW);
+         Serial.println("B2 OFF 0V");    
+     }
+   delay(1000); 
+   //--------------------------------------------------------------------B3--------------------------------------------------------------------
+   boolean state_b3 = Firebase.getBool("0000:DB0:0000::/B3/estado");
+   if (Firebase.failed()) {
+      Serial.print("Error verificando estado:");
+      Serial.println(Firebase.error());  
+      return;
+  }
+  delay(1500);
+  
+  if(state_b3 == true){
+    
+    String voltaje = Firebase.getString("0000:DB0:0000::/B3/voltaje");
+    if (Firebase.failed()) {
+      Serial.print("Error verificando voltaje");
+      Serial.println(Firebase.error());  
+      return;
+    }
+    delay(1000);
+    
+    if(voltaje == "vl"){
+        digitalWrite(BIT_1,HIGH);
+        digitalWrite(BIT_VOLT_1,LOW);
+        Serial.println("B3 ON - 15V");
+      } else if (voltaje == "vh"){
+         digitalWrite(BIT_3,HIGH);
+         digitalWrite(BIT_VOLT_3,HIGH);
+         Serial.println("B3 ON - 30V");
+        }
+   } else if (!state_b3){
+         digitalWrite(BIT_3,LOW);
+         digitalWrite(BIT_VOLT_3,LOW);
+         Serial.println("B3 OFF 0V");    
+     }
+   delay(1000);
 }
