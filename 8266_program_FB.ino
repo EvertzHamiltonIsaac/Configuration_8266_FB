@@ -24,6 +24,7 @@
 
 boolean ValuesOfBits[8] = {true, false, true, false, true, false, true, false}; //Este arreglo debe ser guardado en memoria, Es el estado de los datos.
 
+
 void esp_presets(){ //Funcion que configura el nodo de el ESP.
   Firebase.set("MOD000-ESP000/ID", ID); //Establece su ID
   
