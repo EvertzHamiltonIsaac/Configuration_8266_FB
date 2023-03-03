@@ -84,7 +84,7 @@ void loop() {
       Serial.println(Firebase.error());  
       return;
     }
-    delay(1000);
+    //delay(1000);
     
     if(voltaje == "vl"){
         digitalWrite(BIT_0,HIGH);
@@ -119,7 +119,7 @@ void loop() {
       Serial.println(Firebase.error());  
       return;
     }
-    delay(1000);
+    //delay(1000);
     
     if(voltaje == "vl"){
         digitalWrite(BIT_1,HIGH);
@@ -153,7 +153,7 @@ void loop() {
       Serial.println(Firebase.error());  
       return;
     }
-    delay(1000);
+    //delay(1000);
     
     if(voltaje == "vl"){
         digitalWrite(BIT_2,HIGH);
@@ -187,7 +187,7 @@ void loop() {
       Serial.println(Firebase.error());  
       return;
     }
-    delay(1000);
+    //delay(1000);
     
     if(voltaje == "vl"){
         digitalWrite(BIT_1,HIGH);
